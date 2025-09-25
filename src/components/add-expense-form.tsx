@@ -58,7 +58,7 @@ export function AddExpenseForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       date: new Date(),
-      amount: 0,
+      amount: undefined,
       notes: "",
     },
   });
@@ -90,8 +90,9 @@ export function AddExpenseForm() {
       });
       form.reset({
         date: new Date(),
-        amount: 0,
+        amount: undefined,
         notes: "",
+        category: undefined,
       });
     } catch (error) {
       console.error("Error adding document: ", error);
@@ -115,7 +116,7 @@ export function AddExpenseForm() {
             <FormItem>
               <FormLabel>Amount</FormLabel>
               <FormControl>
-                <Input type="number" step="0.01" placeholder="0.00" {...field} />
+                <Input type="number" step="0.01" placeholder="0.00" {...field} value={field.value ?? ''} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -127,7 +128,7 @@ export function AddExpenseForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Category</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a category" />

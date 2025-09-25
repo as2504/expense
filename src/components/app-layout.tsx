@@ -5,10 +5,12 @@ import { useAuth } from './auth-provider';
 import { useRouter } from 'next/navigation';
 import { TabNavigation } from './tab-navigation';
 import { AppHeader } from './app-header';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -23,22 +25,17 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="relative flex min-h-screen w-full flex-col">
-        {/* Desktop Header */}
-        <div className="hidden md:block">
-            <AppHeader />
-        </div>
-      
-        {/* Desktop Nav */}
-        <div className="container hidden md:block pt-4">
-            <TabNavigation />
-        </div>
+        <AppHeader />
+        
+        {!isMobile && (
+          <div className="container pt-4">
+              <TabNavigation />
+          </div>
+        )}
 
         <main className="flex-1 container px-4 pb-20 md:pb-4">{children}</main>
 
-        {/* Mobile Nav */}
-        <div className="md:hidden">
-            <TabNavigation />
-        </div>
+        {isMobile && <TabNavigation />}
     </div>
   );
 }

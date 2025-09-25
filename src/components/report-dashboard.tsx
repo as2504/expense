@@ -14,11 +14,11 @@ import { useAuth } from "./auth-provider";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Button } from "./ui/button";
-import { Calendar as CalendarIcon, Loader2, BarChart, TrendingUp, PieChart, Wallet } from "lucide-react";
+import { Calendar as CalendarIcon, Loader2, BarChart, TrendingUp, PieChart as PieChartIcon, Wallet } from "lucide-react";
 import { Calendar } from "./ui/calendar";
 import { addDays, format, startOfMonth, differenceInDays } from "date-fns";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from "@/components/ui/chart";
-import { Bar, BarChart as RechartsBarChart, Pie, PieChart as RechartsPieChart, ResponsiveContainer, XAxis, YAxis, Cell } from "recharts";
+import { Bar, BarChart as RechartsBarChart, Pie, PieChart as RechartsPieChart, ResponsiveContainer, XAxis, YAxis, Cell, Legend } from "recharts";
 import type { Expense, ExpenseCategory } from "@/lib/types";
 import { Skeleton } from "./ui/skeleton";
 
@@ -176,7 +176,7 @@ export function ReportDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Biggest Category</CardTitle>
-            <PieChart className="h-4 w-4 text-muted-foreground" />
+            <PieChartIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{biggestCategory}</div>
@@ -186,8 +186,12 @@ export function ReportDashboard() {
       )}
 
       {loading ? (
-        <Skeleton className="h-[400px] w-full" />
+        <div className="grid md:grid-cols-2 gap-4">
+            <Skeleton className="h-[400px] w-full" />
+            <Skeleton className="h-[400px] w-full" />
+        </div>
       ) : expenses.length > 0 ? (
+        <div className="grid md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
             <CardTitle>Category Breakdown</CardTitle>
@@ -199,17 +203,38 @@ export function ReportDashboard() {
                   cursor={false}
                   content={<ChartTooltipContent hideLabel />}
                 />
-                <Pie data={categoryData} dataKey="amount" nameKey="name" innerRadius={60}>
+                <Pie data={categoryData} dataKey="amount" nameKey="name" innerRadius={60} labelLine={false} label>
                     {categoryData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={chartConfig[entry.name as keyof typeof chartConfig]?.color} />
                     ))}
                 </Pie>
+                <Legend />
               </RechartsPieChart>
             </ChartContainer>
           </CardContent>
         </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Spending Over Time</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={chartConfig} className="min-h-[200px] w-full aspect-video">
+              <RechartsBarChart data={categoryData}>
+                <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={8} />
+                <YAxis />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Bar dataKey="amount" radius={4}>
+                    {categoryData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={chartConfig[entry.name as keyof typeof chartConfig]?.color} />
+                    ))}
+                </Bar>
+              </RechartsBarChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+        </div>
       ) : (
-         <Card className="flex items-center justify-center h-64">
+         <Card className="flex items-center justify-center h-64 col-span-full">
             <p className="text-muted-foreground">No expenses found for this period.</p>
          </Card>
       )}

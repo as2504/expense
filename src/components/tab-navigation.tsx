@@ -2,17 +2,20 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { PlusCircle, BarChartBig, PiggyBank } from "lucide-react";
+import { PlusCircle, BarChartBig, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
-import { Logo } from "./logo";
-import { AppHeader } from "./app-header";
 
-const navItems = [
+interface NavItem {
+    href: string;
+    label: string;
+    icon: LucideIcon;
+}
+
+export const navItems: NavItem[] = [
   { href: "/", label: "Add Expense", icon: PlusCircle },
   { href: "/report", label: "Report", icon: BarChartBig },
-  { href: "/budget", label: "Budget", icon: PiggyBank },
 ];
 
 export function TabNavigation() {
@@ -48,7 +51,7 @@ export function TabNavigation() {
 
   return (
      <Tabs value={pathname} className="w-full">
-      <TabsList className="grid w-full grid-cols-3">
+      <TabsList className={`grid w-full grid-cols-${navItems.length}`}>
          {navItems.map((item) => (
              <TabsTrigger value={item.href} asChild key={item.href}>
                 <Link href={item.href}>
