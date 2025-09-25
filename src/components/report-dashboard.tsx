@@ -18,7 +18,7 @@ import { Calendar as CalendarIcon, Loader2, BarChart, TrendingUp, PieChart as Pi
 import { Calendar } from "./ui/calendar";
 import { addDays, format, startOfMonth, differenceInDays } from "date-fns";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from "@/components/ui/chart";
-import { Bar, BarChart as RechartsBarChart, Pie, PieChart as RechartsPieChart, ResponsiveContainer, XAxis, YAxis, Cell, Legend } from "recharts";
+import { Bar, BarChart as RechartsBarChart, Pie, PieChart as RechartsPieChart, ResponsiveContainer, XAxis, YAxis, Cell, Legend, Tooltip } from "recharts";
 import type { Expense, ExpenseCategory } from "@/lib/types";
 import { Skeleton } from "./ui/skeleton";
 
@@ -73,7 +73,7 @@ export function ReportDashboard() {
     }
   }, [user, date]);
 
-  const { totalSpend, avgDailySpend, biggestCategory, categoryData } =
+  const { totalSpend, avgDailySpend, biggestCategory, categoryData, categoryPercentageData } =
     useMemo(() => {
       const total = expenses.reduce((sum, exp) => sum + exp.amount, 0);
       const days = date?.from && date?.to ? differenceInDays(date.to, date.from) + 1 : 1;
@@ -93,15 +93,22 @@ export function ReportDashboard() {
         }
       });
       
-      const chartData = Object.entries(spendingByCategory)
+      const barChartData = Object.entries(spendingByCategory)
         .map(([name, amount]) => ({ name, amount }))
         .sort((a, b) => b.amount - a.amount);
+
+      const pieChartData = Object.entries(spendingByCategory).map(([name, amount]) => ({
+        name,
+        value: total > 0 ? (amount / total) * 100 : 0,
+        amount,
+      }));
 
       return {
         totalSpend: total,
         avgDailySpend: avg,
         biggestCategory: biggestCat,
-        categoryData: chartData,
+        categoryData: barChartData,
+        categoryPercentageData: pieChartData,
       };
     }, [expenses, date]);
 
@@ -194,17 +201,14 @@ export function ReportDashboard() {
         <div className="grid md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Category Breakdown</CardTitle>
+            <CardTitle>Category Breakdown (%)</CardTitle>
           </CardHeader>
           <CardContent>
             <ChartContainer config={chartConfig} className="min-h-[200px] w-full aspect-video">
               <RechartsPieChart>
-                 <ChartTooltip
-                  cursor={false}
-                  content={<ChartTooltipContent hideLabel />}
-                />
-                <Pie data={categoryData} dataKey="amount" nameKey="name" innerRadius={60} labelLine={false} label>
-                    {categoryData.map((entry, index) => (
+                 <Tooltip formatter={(value: number, name, props) => [`${value.toFixed(2)}% ($${props.payload.amount.toFixed(2)})`, name]}/>
+                <Pie data={categoryPercentageData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} labelLine={false} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                    {categoryPercentageData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={chartConfig[entry.name as keyof typeof chartConfig]?.color} />
                     ))}
                 </Pie>
@@ -215,7 +219,7 @@ export function ReportDashboard() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Spending Over Time</CardTitle>
+            <CardTitle>Spending by Category</CardTitle>
           </CardHeader>
           <CardContent>
             <ChartContainer config={chartConfig} className="min-h-[200px] w-full aspect-video">

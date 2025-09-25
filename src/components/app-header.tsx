@@ -21,13 +21,15 @@ import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
 import { Logo } from "./logo";
-import { TabNavigation } from "./tab-navigation";
+import { TabNavigation, navItems } from "./tab-navigation";
 import Link from "next/link";
-import { navItems } from "./tab-navigation";
+import { useIsMobile } from "@/hooks/use-mobile";
+
 
 export function AppHeader() {
   const { user } = useAuth();
   const router = useRouter();
+  const isMobile = useIsMobile();
 
   const handleLogout = async () => {
     try {
@@ -41,32 +43,42 @@ export function AppHeader() {
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 items-center">
-         <div className="flex items-center md:hidden">
-            <Sheet>
-                <SheetTrigger asChild>
-                    <Button variant="outline" size="icon">
-                        <Menu className="h-5 w-5" />
-                        <span className="sr-only">Toggle Menu</span>
-                    </Button>
-                </SheetTrigger>
-                <SheetContent side="left">
-                    <nav className="grid gap-6 text-lg font-medium">
-                        <Link href="#" className="flex items-center gap-2 text-lg font-semibold mb-4">
-                            <Logo />
-                        </Link>
-                        {navItems.map(item => (
-                             <Link href={item.href} key={item.href} className="text-muted-foreground hover:text-foreground">
-                                {item.label}
-                            </Link>
-                        ))}
-                    </nav>
-                </SheetContent>
-            </Sheet>
-        </div>
         <div className="mr-4 hidden md:flex">
           <Logo />
         </div>
-        <div className="flex w-full items-center justify-end md:w-auto">
+
+        {!isMobile && (
+          <div className="flex-1">
+              <TabNavigation />
+          </div>
+        )}
+
+        {isMobile && (
+           <div className="flex-1">
+             <Sheet>
+                 <SheetTrigger asChild>
+                     <Button variant="outline" size="icon">
+                         <Menu className="h-5 w-5" />
+                         <span className="sr-only">Toggle Menu</span>
+                     </Button>
+                 </SheetTrigger>
+                 <SheetContent side="left">
+                     <nav className="grid gap-6 text-lg font-medium">
+                         <Link href="/" className="flex items-center gap-2 text-lg font-semibold mb-4">
+                             <Logo />
+                         </Link>
+                         {navItems.map(item => (
+                              <Link href={item.href} key={item.href} className="text-muted-foreground hover:text-foreground">
+                                 {item.label}
+                             </Link>
+                         ))}
+                     </nav>
+                 </SheetContent>
+             </Sheet>
+         </div>
+        )}
+
+        <div className="flex items-center justify-end">
           {user && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

@@ -27,12 +27,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <div className="relative flex min-h-screen w-full flex-col">
         <AppHeader />
         
-        {!isMobile && (
-          <div className="container pt-4">
-              <TabNavigation />
-          </div>
-        )}
-
         <main className="flex-1 container px-4 pb-20 md:pb-4">{children}</main>
 
         {isMobile && <TabNavigation />}

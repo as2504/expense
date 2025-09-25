@@ -39,6 +39,7 @@ import type { ExpenseCategory } from "@/lib/types";
 import { useState } from "react";
 
 const formSchema = z.object({
+  name: z.string().min(1, { message: "Please enter what the expense was for." }),
   amount: z.coerce.number().positive({ message: "Amount must be positive." }),
   category: z.enum(EXPENSE_CATEGORIES, {
     required_error: "Please select a category.",
@@ -60,6 +61,7 @@ export function AddExpenseForm() {
       date: new Date(),
       amount: undefined,
       notes: "",
+      name: "",
     },
   });
 
@@ -78,6 +80,7 @@ export function AddExpenseForm() {
     try {
       await addDoc(collection(db, "users", user.uid, "expenses"), {
         userId: user.uid,
+        name: values.name,
         amount: values.amount,
         category: values.category,
         date: values.date,
@@ -93,6 +96,7 @@ export function AddExpenseForm() {
         amount: undefined,
         notes: "",
         category: undefined,
+        name: "",
       });
     } catch (error) {
       console.error("Error adding document: ", error);
@@ -111,12 +115,25 @@ export function AddExpenseForm() {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <FormField
           control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>What for?</FormLabel>
+              <FormControl>
+                <Input placeholder="e.g. Coffee with friends" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
           name="amount"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Amount</FormLabel>
               <FormControl>
-                <Input type="number" step="0.01" placeholder="0.00" {...field} value={field.value ?? ''} />
+                <Input type="number" step="0.01" placeholder="0.00" {...field} onChange={e => field.onChange(e.target.valueAsNumber)} value={field.value ?? ''} />
               </FormControl>
               <FormMessage />
             </FormItem>
